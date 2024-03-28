@@ -3,23 +3,20 @@ import Randomstring from 'randomstring'
 
 class Heurist {
 
-  static renderImage() {
-    console.log('ok')
-  }
   /**
    * 
-   * 根据给定的参数创建一个图像。
-   * @param {Object} config - 包含图像创建选项的对象。
-   * @param {string} config.AUTH_KEY - 用于身份验证的授权密钥，确保调用者有权访问该功能。
-   * @param {number} config.width - 图像的宽度。
-   * @param {number} config.height - 图像的高度。
-   * @param {number} config.num_iterations - 执行迭代的次数。1-50
-   * @param {number} config.guidance_scale - 指导尺度，用于调整生成过程中的某些参数影响力。1-20
-   * @param {string} config.model - 使用的模型名称，指定进行生成或迭代使用的特定模型。
-   * @param {string} [config.prompt] - （可选）用于生成图像或迭代的主要提示信息。
-   * @param {string} [config.neg_prompt] - （可选）用于指定应避免生成内容的负面提示信息。
-   * @param {number} [config.seed] - （可选）种子值，用于确保生成结果的可重复性。
-   * @return {Object} 返回一个对象，其中包含一个`data`对象。`data`对象内部包含一个`url`属性，该属性是生成图像的URL链接。
+   * Creates an image according to the given parameters.
+   * @param {Object} config - An object for the image creation option.
+   * @param {string} config.AUTH_KEY - An authorization key for authentication, ensuring that the caller has access to the feature.
+   * @param {number} config.width - The width of the image.
+   * @param {number} config.height - The height of the image.
+   * @param {number} config.num_iterations - Number of iterations to perform. 1-50
+   * @param {number} config.guidance_scale - Guidance scale for adjusting the influence of certain parameters in the generation process. 1-20
+   * @param {string} config.model - The name of the model used, which specifies the particular model used to perform the generation or iteration.
+   * @param {string} [config.prompt] - (Optional) The main cue information used to generate the image or iteration.
+   * @param {string} [config.neg_prompt] - (Optional) Negative cue messages used to specify that generation of content should be avoided.
+   * @param {number} [config.seed] - (Optional) Seed value to ensure repeatability of the generated results.
+   * @return {Object} Returns an object containing a `data` object. The `data` object internally contains a `url` attribute which is the URL link to the generated image.
    */
   static async generateImage(config = {}) {
     try {
