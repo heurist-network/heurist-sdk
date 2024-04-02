@@ -9,7 +9,8 @@ const config: DocsThemeConfig = {
   chat: {
     link: 'https://discord.com/invite/heuristai',
   },
-  docsRepositoryBase: 'https://github.com/heurist-network/heurist-sdk',
+  docsRepositoryBase:
+    'https://github.com/heurist-network/heurist-sdk/blob/main',
   footer: {
     text: 'Heurist SDK Docs',
   },

@@ -1,0 +1,116 @@
+import { OptionTable } from '@components/table'
+
+# Images
+
+Given a prompt and the model will generate a new image.
+
+```ts {8-10} copy
+import Heurist from 'heurist'
+
+const heurist = new Heurist({
+  apiKey: process.env['HEURIST_API_KEY'], // This is the default and can be omitted
+})
+
+async function main() {
+  const response = await heurist.images.generate({
+    model: 'BrainDance',
+  })
+
+  // response
+  // {
+  //   url: 'https://heurist-images.s3.us-east-1.amazonaws.com/**********.png',
+  //   model: 'BrainDance',
+  //   prompt: 'xxxxxx',
+  //   ...
+  // }
+}
+
+main()
+```
+
+## Parameters
+
+- Type: `ImageGenerateParams`
+
+<OptionTable
+  language="en"
+  options={[
+    [
+      'model',
+      'ImageModel',
+      true,
+      'The name of the model used, which specifies the particular model used to perform the generation or iteration.',
+    ],
+    [
+      'prompt',
+      'string',
+      false,
+      'The main cue information used to generate the image or iteration.',
+    ],
+    [
+      'neg_prompt',
+      'string',
+      false,
+      'Negative cue messages used to specify that generation of content should be avoided.',
+    ],
+    [
+      'num_iterations',
+      'number',
+      false,
+      'Number of iterations to perform. (1-50)',
+    ],
+    [
+      'guidance_scale',
+      'number',
+      false,
+      'Guidance scale for adjusting the influence of certain parameters in the generation process. (1-20)',
+    ],
+    ['width', 'number', false, 'The width of the image.'],
+    ['height', 'number', false, 'The height of the image.'],
+    [
+      'seed',
+      'number',
+      false,
+      'Seed value to ensure repeatability of the generated results.',
+    ],
+  ]}
+/>
+
+## Returns
+
+- Type: `ImageGenerateParams & { url: string }`
+
+<OptionTable
+  language="en"
+  options={[['url', 'string', true, 'The URL link to the generated image.']]}
+/>
+
+```ts copy
+{
+  url: 'https://heurist-images.s3.us-east-1.amazonaws.com/**********.png',
+  model: 'BrainDance',
+  prompt: 'xxxxxx',
+  neg_prompt: 'xxxxxx',
+  ...
+}
+```
+
+## Types
+
+### `ImageModel`
+
+Currently supported models:
+
+- BrainDance
+- BlazingDrive
+- BluePencilRealistic
+- YamersCartoonArcadia
+- HelloWorldFilmGrain
+- ArthemyComics
+- ArthemyReal
+- Aurora
+- SDXLUnstableDiffusersV11
+- AnimagineXL
+- CyberRealisticXL
+- DreamShaperXL
+- AAMXLAnimeMix
