@@ -1,14 +1,7 @@
+import { APIResource } from 'heurist/resource'
 import Randomstring from 'randomstring'
 
-import Heurist from '../core'
-
-export class Images {
-  protected _client: Heurist
-
-  constructor(client: Heurist) {
-    this._client = client
-  }
-
+export class Images extends APIResource {
   async generate(body: ImageGenerateParams): Promise<ImagesResponse> {
     try {
       const id = Randomstring.generate({
@@ -69,7 +62,7 @@ export class Images {
           String(response.status).startsWith('5') ||
           String(response.status).startsWith('4')
         ) {
-          throw new Error(`Generate image error. Please try again later`)
+          throw new Error('Generate image error. Please try again later')
         }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
