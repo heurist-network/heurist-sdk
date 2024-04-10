@@ -1,6 +1,6 @@
 {
   "name": "heurist",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "The official TypeScript library for the Heurist AI API",
   "module": "dist/index.mjs",
   "types": "dist/index.d.mts",
@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/heurist-network/heurist-sdk.git"
+    "url": "git+https://github.com/heurist-network"
   },
   "author": "Heurist <team@heurist.xyz>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/heurist-network/heurist-sdk/issues"
   },
-  "homepage": "https://sdk.heurist.ai",
+  "homepage": "https://heurist.ai",
   "dependencies": {
     "next": "14.1.4",
     "nextra": "2.13.4",
