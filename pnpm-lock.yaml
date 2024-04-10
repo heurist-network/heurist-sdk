@@ -4747,11 +4747,11 @@ packages:
       typescript:
         optional: true
     dependencies:
-<<<<<<< HEAD
-      '@swc/core': 1.4.12
-=======
       '@swc/core': 1.4.13
+      bundle-require: 4.0.2(esbuild@0.19.12)
+      cac: 6.7.14
       chokidar: 3.6.0
+      debug: 4.3.4
       esbuild: 0.19.12
       execa: 5.1.1
       globby: 11.1.0
