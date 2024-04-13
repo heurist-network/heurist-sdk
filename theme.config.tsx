@@ -11,9 +11,9 @@ const config: DocsThemeConfig = {
   },
   docsRepositoryBase:
     'https://github.com/heurist-network/heurist-sdk/blob/main',
-  footer: {
-    text: 'Heurist SDK Docs',
-  },
+    footer: {
+      text: 'Heurist SDK Docs'
+    }
 }
 
 export default config
