@@ -36,7 +36,7 @@ export function OptionTable({
               <td className="whitespace-pre py-2 pl-6 font-mono text-xs font-semibold leading-6 text-slate-500 dark:text-slate-400">
                 {!!required && 'true'}
               </td>
-              <td className="py-2 pl-6">{description}</td>
+              <td className="py-2 pl-6 dark:text-slate-500">{description}</td>
             </tr>
           ))}
         </tbody>

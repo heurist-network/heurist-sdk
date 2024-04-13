@@ -11,9 +11,18 @@ const config: DocsThemeConfig = {
   },
   docsRepositoryBase:
     'https://github.com/heurist-network/heurist-sdk/blob/main',
-  footer: {
-    text: 'Heurist SDK Docs',
-  },
+    footer: {
+      text: 'Heurist SDK Docs',
+      // component: () => (
+      //   <div className="nextra-theme-docs-footer bg-gray-100 text-gray-600 py-6 text-md">
+      //     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      //       <div className="flex items-center justify-center">
+      //           Heurist SDK Docs
+      //       </div>
+      //     </div>
+      //   </div>
+      // ),
+    }
 }
 
 export default config
