@@ -1,6 +1,6 @@
 {
   "name": "heurist",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "The official TypeScript library for the Heurist AI API",
   "module": "dist/index.mjs",
   "types": "dist/index.d.mts",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/heurist-network"
+    "url": "https://github.com/heurist-network"
   },
   "author": "Heurist <team@heurist.xyz>",
   "license": "MIT",
