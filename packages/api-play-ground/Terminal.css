@@ -1,0 +1,22 @@
+.terminal-container {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: monospace;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .terminal {
+    overflow-y: auto;
+    max-height: 200px;
+  }
+  
+  .terminal form {
+    margin-top: 10px;
+  }
+  
+  .terminal span {
+    margin-right: 5px;
+  }
+  
