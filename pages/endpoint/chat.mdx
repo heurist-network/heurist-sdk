@@ -1,0 +1,86 @@
+import { OptionTable } from '@components/table'
+
+# Chat
+
+Given a list of messages comprising a conversation, the model will return a response.
+
+## Create chat completion
+
+### Input
+
+```ts {8-14} copy
+import Heurist from 'heurist'
+
+const heurist = new Heurist({
+  apiKey: process.env['HEURIST_API_KEY'], // This is the default and can be omitted
+})
+
+async function main() {
+  const response = await heurist.chat.completions.create({
+    model: 'mistralai/mixtral-8x7b-instruct-v0.1',
+    messages: [
+      { role: 'system', content: 'You are a helpful assistant.' },
+      { role: 'user', content: 'What is the capital of France?' },
+    ],
+  })
+}
+
+main()
+```
+
+### Response
+
+```json
+{
+  "id": "chatcmpl-123",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "\n\nHello there, how may I assist you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "created": 1677652288,
+  "model": "mistralai/mixtral-8x7b-instruct-v0.1",
+  "object": "chat.completion",
+  "system_fingerprint": null,
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "ended": 1677652289
+}
+```
+
+### Parameters
+
+- Type: `ChatCompletionCreateParamsNonStreaming`
+
+<OptionTable
+  language="en"
+  options={[
+    ['model', 'ChatCompletionModel', true, 'ID of the model to use.'],
+    [
+      'messages',
+      'Array<ChatCompletionMessageParam>',
+      true,
+      'A list of messages comprising the conversation so far.',
+    ],
+    [
+      'temperature',
+      'number',
+      false,
+      'What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.',
+    ],
+    [
+      'max_tokens',
+      'number',
+      false,
+      'The maximum number of [tokens](/tokenizer) that can be generated in the chat completion.',
+    ],
+  ]}
+/>

@@ -4,6 +4,8 @@ import { OptionTable } from '@components/table'
 
 Given a prompt and the model will generate a new image.
 
+### Input
+
 ```ts {8-10} copy
 import Heurist from 'heurist'
 
@@ -15,17 +17,19 @@ async function main() {
   const response = await heurist.images.generate({
     model: 'BrainDance',
   })
-
-  // response
-  // {
-  //   url: 'https://heurist-images.s3.us-east-1.amazonaws.com/**********.png',
-  //   model: 'BrainDance',
-  //   prompt: 'xxxxxx',
-  //   ...
-  // }
 }
 
 main()
+```
+
+### Response
+
+```json
+{
+  "url": "https://heurist-images.s3.us-east-1.amazonaws.com/**********.png",
+  "model": "BrainDance",
+  "prompt": "xxxxxx"
+}
 ```
 
 ## Parameters
