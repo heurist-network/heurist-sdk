@@ -1,9 +1,10 @@
 {
   "name": "heurist",
-  "version": "0.0.8",
+  "version": "0.0.13",
   "description": "The official TypeScript library for the Heurist AI API",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.mts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "type": "commonjs",
   "files": [
     "dist"
   ],

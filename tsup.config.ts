@@ -2,10 +2,11 @@ import { defineConfig } from 'tsup'
 
 export default defineConfig((options) => ({
   treeshake: true,
-  splitting: true,
+  splitting: false,
   entry: ['packages'],
-  format: ['esm'],
+  format: ['esm', 'cjs'],
   clean: true,
+  sourcemap: true,
   dts: true,
   minify: true,
   ...options,
