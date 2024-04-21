@@ -1,5 +1,4 @@
 import * as API from './apis'
-import { Images } from './images'
 import { readEnv } from './lib'
 
 export interface ClientOptions {
@@ -32,7 +31,7 @@ export class Heurist {
     this.apiKey = apiKey
   }
 
-  images: API.Images = new Images(this)
+  images: API.Images = new API.Images(this)
   chat: API.Chat = new API.Chat(this)
 }
 

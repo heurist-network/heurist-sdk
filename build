@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+tsup
+
+node scripts/fix-index-exports.cjs

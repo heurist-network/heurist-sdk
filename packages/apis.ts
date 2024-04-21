@@ -1,4 +1,14 @@
 export { Images } from './images'
-export type { Image, ImageGenerateParams, ImagesResponse } from './images'
+export type {
+  Image,
+  ImageModel,
+  ImageGenerateParams,
+  ImagesResponse,
+} from './images'
 
-export { Chat } from './chat'
+export { Chat, Completions } from './chat'
+export type {
+  ChatCompletionModel,
+  ChatCompletionMessageParam,
+  ChatCompletionCreateParamsNonStreaming,
+} from './chat'
