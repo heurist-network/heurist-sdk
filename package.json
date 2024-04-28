@@ -1,7 +1,7 @@
 {
   "name": "heurist",
   "version": "0.0.20",
-  "description": "The official TypeScript library for the Heurist AI API",
+  "description": "The official TypeScript library for Heurist AI Inference",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heurist-network/heurist-sdk"
+    "url": "https://github.com/heurist-network/heurist-sdk.git"
   },
   "author": "Heurist <team@heurist.xyz>",
   "license": "MIT",

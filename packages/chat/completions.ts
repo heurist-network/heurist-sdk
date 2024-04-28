@@ -1,6 +1,62 @@
 import { APIResource } from 'heurist/resource'
 import Randomstring from 'randomstring'
-import { v4 as uuidv4 } from 'uuid'
+
+export type ChatCompletionModel =
+  | (string & {})
+  | 'mistralai/mixtral-8x7b-instruct'
+  | 'mistralai/mistral-7b-instruct'
+  | 'openhermes-2.5-mistral-7b-gptq'
+  | 'openhermes-2-pro-mistral-7b'
+  | 'openhermes-mixtral-8x7b-gptq'
+  | 'openhermes-2-yi-34b-gptq'
+  | 'meta-llama/llama-2-70b-chat'
+  | 'dolphin-2.9-llama3-8b'
+
+export interface ChatCompletionMessageParam {
+  /**
+   * The contents of the user message.
+   */
+  content: string
+
+  /**
+   * The role of the messages author, in this case `user`.
+   */
+  role: 'user' | 'assistant' | 'system'
+
+  /**
+   * An optional name for the participant. Provides the model information to
+   * differentiate between participants of the same role.
+   */
+  name?: string
+}
+
+export interface ChatCompletionCreateParamsNonStreaming {
+  /**
+   * A list of messages comprising the conversation so far.
+   */
+  messages: Array<ChatCompletionMessageParam>
+
+  /**
+   * ID of the model to use.
+   */
+  model: ChatCompletionModel
+
+  /**
+   * What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+   * make the output more random, while lower values like 0.2 will make it more
+   * focused and deterministic.
+   */
+  temperature?: number | null
+
+  /**
+   * The maximum number of [tokens](/tokenizer) that can be generated in the chat
+   * completion.
+   *
+   * The total length of input tokens and generated tokens is limited by the model's
+   * context length.
+   */
+  max_tokens?: number | null
+}
 
 export class Completions extends APIResource {
   async create(body: ChatCompletionCreateParamsNonStreaming) {
@@ -9,7 +65,7 @@ export class Completions extends APIResource {
 
       let prompt = ''
 
-      if (model.startsWith('openhermes')) {
+      if (model.startsWith('openhermes') || model.startsWith('dolphin')) {
         messages.map((item) => {
           if (item.role === 'system') {
             prompt += '<|im_start|>system' + item.content + '<|im_end|>' + '\n'
@@ -96,8 +152,10 @@ export class Completions extends APIResource {
         max_tokens,
       }
 
+      const job_id = `sdk-chat-${id}`
+
       const params = {
-        job_id: `heurist-llm-gateway-${id}`,
+        job_id,
         model_input: {
           LLM: model_input,
         },
@@ -130,20 +188,21 @@ export class Completions extends APIResource {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const content = await response.json()
+      const content = await response.text()
 
       const result = {
-        id: `chatcmpl-${uuidv4()}`,
-        choices: [
-          {
-            finish_reason: 'stop',
-            index: 0,
-            message: {
-              content: `\n\n${content}`,
-              role: 'assistant',
-            },
-          },
-        ],
+        id: job_id,
+        // choices: [
+        //   {
+        //     finish_reason: 'stop',
+        //     index: 0,
+        //     message: {
+        //       content: `\n\n${content}`,
+        //       role: 'assistant',
+        //     },
+        //   },
+        // ],
+        content: content,
         created,
         model,
         object: 'chat.completion',
@@ -157,66 +216,10 @@ export class Completions extends APIResource {
       }
       return result
     } catch (error) {
-      console.log(error.message, 'Completions chat error')
+      console.log('Completions chat error:', error.message)
       throw new Error(
         error.message || `Completions chat error. Please try again later`,
       )
     }
   }
-}
-
-export type ChatCompletionModel =
-  | (string & {})
-  | 'mistralai/mixtral-8x7b-instruct-v0.1'
-  | 'mistralai/mistral-7b-instruct-v0.2'
-  | 'openhermes-2.5-mistral-7b-gptq'
-  | 'openhermes-2-pro-mistral-7b'
-  | 'openhermes-mixtral-8x7b-gptq'
-  | 'openhermes-2-yi-34b-gptq'
-  | 'meta-llama/llama-2-70b-chat'
-
-export interface ChatCompletionMessageParam {
-  /**
-   * The contents of the user message.
-   */
-  content: string
-
-  /**
-   * The role of the messages author, in this case `user`.
-   */
-  role: 'user' | 'assistant' | 'system'
-
-  /**
-   * An optional name for the participant. Provides the model information to
-   * differentiate between participants of the same role.
-   */
-  name?: string
-}
-
-export interface ChatCompletionCreateParamsNonStreaming {
-  /**
-   * A list of messages comprising the conversation so far.
-   */
-  messages: Array<ChatCompletionMessageParam>
-
-  /**
-   * ID of the model to use.
-   */
-  model: ChatCompletionModel
-
-  /**
-   * What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
-   * make the output more random, while lower values like 0.2 will make it more
-   * focused and deterministic.
-   */
-  temperature?: number | null
-
-  /**
-   * The maximum number of [tokens](/tokenizer) that can be generated in the chat
-   * completion.
-   *
-   * The total length of input tokens and generated tokens is limited by the model's
-   * context length.
-   */
-  max_tokens?: number | null
 }

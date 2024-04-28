@@ -36,7 +36,7 @@ export class Images extends APIResource {
       }
 
       const params = {
-        job_id: `imagine-${id}`,
+        job_id: `sdk-image-${id}`,
         model_input: {
           SD: model_input,
         },
