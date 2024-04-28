@@ -10,32 +10,69 @@ npm i heurist
 
 ## Authentication
 
-The Heurist API uses API keys for authentication. **(Coming soon...)**
+The Heurist API uses API keys for authentication. 
 
 Remember that your API key is a secret! Do not share it with others or expose it in any client-side code (browsers, apps). Production requests must be routed through your own backend server where your API key can be securely loaded from an environment variable or key management service.
 
 ## Usage
 
-```ts {1,3-5,8-10} copy
+```ts
 import Heurist from 'heurist'
 
 const heurist = new Heurist({
   apiKey: process.env['HEURIST_API_KEY'], // This is the default and can be omitted
 })
 
-async function main() {
+async function generateImage() {
   const response = await heurist.images.generate({
     model: 'BrainDance',
+    prompt: '1girl',
+    // below are optional
+    neg_prompt: 'worst quality',
+    num_iterations: 25,
+    guidance_scale: 7.5,
+    width: 1024,
+    height: 768,
+    seed: -1
   })
 
   // response
   // {
-  //   url: 'https://heurist-images.s3.us-east-1.amazonaws.com/**********.png',
-  //   model: 'BrainDance',
-  //   prompt: 'xxxxxx',
+  //   "url": "https://heurist-images.s3.us-east-1.amazonaws.com/**********.png"
   //   ...
   // }
 }
 
-main()
+async function chat() {
+  const response = await heurist.chat.completions.create({
+    model: 'dolphin-2.9-llama3-8b',
+    messages: [{
+      role: 'system',
+      content: 'You are a helpful AI assistant'
+    },
+    {
+      role: 'user',
+      content: 'Explain Ethereum in 2 sentences'
+    }],
+    // below are optional
+    temperature: 0.7,
+    max_tokens: 2048
+  })
+}
+
+  // response
+  // {
+  //   "content": "Ethereum is a decentralized blockchain platform that enables developers to build and deploy smart contracts. It allows users to exchange value and perform transactions without the need for intermediaries like banks or financial institutions."
+  //   ...
+  // }
 ```
+
+## Example Applications
+
+Heurist team has built 3 applications using Heurist's LLM and Image Generation APIs. You can find their source code here. Forks are welcomed!
+
+- 🎨 Imagine: https://github.com/heurist-network/imagine
+
+- 🧠 Pondera: https://github.com/heurist-network/pondera
+
+- 🔍 Heurist Search: Frontend https://github.com/heurist-network/gpt-search-web Backend https://github.com/heurist-network/search_with_lepton 

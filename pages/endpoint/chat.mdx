@@ -17,7 +17,7 @@ const heurist = new Heurist({
 
 async function main() {
   const response = await heurist.chat.completions.create({
-    model: 'mistralai/mixtral-8x7b-instruct-v0.1',
+    model: 'mistralai/mixtral-8x7b-instruct',
     messages: [
       { role: 'system', content: 'You are a helpful assistant.' },
       { role: 'user', content: 'What is the capital of France?' },
@@ -33,18 +33,9 @@ main()
 ```json
 {
   "id": "chatcmpl-123",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "\n\nHello there, how may I assist you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
+  "content": "Hello there, how may I assist you today?"
   "created": 1677652288,
-  "model": "mistralai/mixtral-8x7b-instruct-v0.1",
+  "model": "mistralai/mixtral-8x7b-instruct",
   "object": "chat.completion",
   "system_fingerprint": null,
   "usage": {
