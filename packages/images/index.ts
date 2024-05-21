@@ -18,6 +18,7 @@ export class Images extends APIResource {
         height,
         seed,
         model,
+        job_id_prefix = 'sdk-image',
       } = body
 
       const model_input = {
@@ -36,7 +37,7 @@ export class Images extends APIResource {
       }
 
       const params = {
-        job_id: `sdk-image-${id}`,
+        job_id: `${job_id_prefix}-${id}`,
         model_input: {
           SD: model_input,
         },
@@ -109,7 +110,7 @@ export interface ImageGenerateParams {
   /**
    * The name of the model used, which specifies the particular model used to perform the generation or iteration.
    */
-  model: ImageModel
+  model: string
 
   /**
    * The main cue information used to generate the image or iteration.
@@ -145,4 +146,9 @@ export interface ImageGenerateParams {
    * Seed value to ensure repeatability of the generated results.
    */
   seed?: number
+
+  /**
+   * The prefix for the job ID.
+   */
+  job_id_prefix?: string
 }

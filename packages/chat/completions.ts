@@ -39,7 +39,7 @@ export interface ChatCompletionCreateParamsNonStreaming {
   /**
    * ID of the model to use.
    */
-  model: ChatCompletionModel
+  model: string
 
   /**
    * What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
@@ -56,12 +56,23 @@ export interface ChatCompletionCreateParamsNonStreaming {
    * context length.
    */
   max_tokens?: number | null
+
+  /**
+   * The prefix for the job ID.
+   */
+  job_id_prefix?: string
 }
 
 export class Completions extends APIResource {
   async create(body: ChatCompletionCreateParamsNonStreaming) {
     try {
-      const { messages, model, temperature = 0.75, max_tokens = 2048 } = body
+      const {
+        messages,
+        model,
+        temperature = 0.75,
+        max_tokens = 2048,
+        job_id_prefix = 'sdk-chat',
+      } = body
 
       let prompt = ''
 
@@ -152,7 +163,7 @@ export class Completions extends APIResource {
         max_tokens,
       }
 
-      const job_id = `sdk-chat-${id}`
+      const job_id = `${job_id_prefix}-${id}`
 
       const params = {
         job_id,
