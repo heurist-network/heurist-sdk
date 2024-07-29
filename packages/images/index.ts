@@ -21,8 +21,16 @@ export class Images extends APIResource {
         job_id_prefix = 'sdk-image',
       } = body
 
+      let promptText = prompt
+
+      if (model === 'Zeek') {
+        promptText = promptText.replaceAll('Zeek', 'z33k')
+      } else if (model === 'Philand') {
+        promptText = promptText.replaceAll('Philand', 'ph1land')
+      }
+
       const model_input = {
-        prompt,
+        prompt: promptText,
         ...(neg_prompt && { neg_prompt }),
         ...(num_iterations && { num_iterations }),
         ...(guidance_scale && { guidance_scale }),
