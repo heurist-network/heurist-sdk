@@ -25,8 +25,10 @@ export class Images extends APIResource {
 
       if (model === 'Zeek') {
         promptText = promptText.replaceAll('Zeek', 'z33k')
+        promptText = promptText.replaceAll('zeek', 'z33k')
       } else if (model === 'Philand') {
         promptText = promptText.replaceAll('Philand', 'ph1land')
+        promptText = promptText.replaceAll('philand', 'ph1land')
       }
 
       const model_input = {
@@ -93,20 +95,7 @@ export class Images extends APIResource {
   }
 }
 
-export type ImageModel =
-  | 'BrainDance'
-  | 'BlazingDrive'
-  | 'BluePencilRealistic'
-  | 'YamersCartoonArcadia'
-  | 'HelloWorldFilmGrain'
-  | 'ArthemyComics'
-  | 'ArthemyReal'
-  | 'Aurora'
-  | 'SDXLUnstableDiffusersV11'
-  | 'AnimagineXL'
-  | 'CyberRealisticXL'
-  | 'DreamShaperXL'
-  | 'AAMXLAnimeMix'
+export type ImageModel = string;
 
 export interface Image extends ImageGenerateParams {
   url: string
