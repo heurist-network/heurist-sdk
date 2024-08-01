@@ -1,0 +1,136 @@
+import { OptionTable } from '@components/table'
+
+# Workflow
+
+The Workflow class provides methods for executing and managing workflow tasks, such as image upscaling.
+
+## Execute Workflow and Wait for Result
+
+Executes a workflow task and waits for the result.
+
+### Input
+
+```ts {8-14} copy
+import Heurist from 'heurist'
+
+const heurist = new Heurist({
+  apiKey: process.env['HEURIST_API_KEY'], // This is the default and can be omitted
+})
+
+async function main() {
+  const upscalerTask = new UpscalerTask({
+    consumer_id: 'example-id',
+    image_url: 'https://example.com/sample.jpg'
+  });
+  const response = await heurist.workflow.executeWorkflowAndWaitForResult(upscalerTask);
+}
+
+main()
+```
+
+### Response
+
+```json
+{
+  "task_id": "example-task-id",
+  "status": "finished",
+  "result": "upscaled-image.png"
+}
+```
+
+## Parameters
+
+- Type: `UpscalerTask`
+
+<OptionTable
+  language="en"
+  options={[
+    [
+      'consumer_id',
+      'string',
+      true,
+      'The ID of the consumer initiating the task. Preferably use UUID to uniquely identity the consumer. This is used to allocate computing resource for this consumer.',
+    ],
+    [
+      'image_url',
+      'string',
+      true,
+      'The URL of the image to be upscaled.',
+    ],
+    [
+      'job_id_prefix',
+      'string',
+      false,
+      'An optional prefix for the job ID. Default is "sdk-workflow".',
+    ],
+  ]}
+/>
+
+## Returns
+
+- Type: `WorkflowTaskResult`
+
+<OptionTable
+  language="en"
+  options={[
+    ['task_id', 'string', true, 'The ID of the executed task.'],
+    ['status', '"waiting" | "running" | "finished" | "failed"', true, 'The status of the task.'],
+    ['result', 'any', false, 'The result of the task, if available.'],
+  ]}
+/>
+
+```ts copy
+{
+  task_id: 'example-task-id',
+  status: 'finished',
+  result: {
+    url: 'https://example.com/upscaled-image.png'
+  }
+}
+```
+
+## Types
+
+### `UpscalerTask`
+
+A class representing an upscaler task, extending the abstract `WorkflowTask` class.
+
+```ts
+class UpscalerTask extends WorkflowTask {
+  constructor(options: UpscalerTaskOptions)
+  get task_type(): WorkflowTaskType.Upscaler
+  get task_details(): { parameters: { image: string } }
+}
+```
+
+### `WorkflowTaskType`
+
+An enum representing the types of workflow tasks.
+
+```ts
+enum WorkflowTaskType {
+  Upscaler = 'upscaler'
+}
+```
+
+## Additional Methods
+
+### executeWorkflow
+
+Executes a workflow task without waiting for the result.
+
+```ts
+async executeWorkflow(task: WorkflowTask): Promise<string>
+```
+
+Returns a Promise that resolves to the task ID.
+
+### queryTaskResult
+
+Queries the result of a previously executed task.
+
+```ts
+async queryTaskResult(task_id: string): Promise<WorkflowTaskResult>
+```
+
+Returns a Promise that resolves to the task result.

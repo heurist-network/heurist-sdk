@@ -68,6 +68,21 @@ async function chat() {
   //   ...
   // }
 
+  async function workflow() {
+    const upscalerTask = new UpscalerTask({
+        consumer_id: 'example-id',
+        image_url: 'https://example.com/sample.jpg'
+    });
+
+    const response = await heurist.workflow.executeWorkflowAndWaitForResult(upscalerTask);
+  }
+
+  // response
+  // {
+  //    "result": "xxxxxxx.png"
+  //    ...
+  // }
+
 ```
 
 ## Requirements
