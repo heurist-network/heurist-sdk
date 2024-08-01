@@ -12,3 +12,6 @@ export type {
   ChatCompletionMessageParam,
   ChatCompletionCreateParamsNonStreaming,
 } from './chat'
+
+export { ComfyUI }  from './comfyui'
+export type { ComfyUIWorkflowParams, ComfyUITaskResult } from './comfyui'

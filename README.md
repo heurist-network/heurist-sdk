@@ -68,6 +68,26 @@ async function chat() {
   //   ...
   // }
 
+  async function comfyuiWorkflow() {
+    const task_id = await heurist.comfyui.executeWorkflow({
+      consumer_id: 'example-id',
+      task_details: { /* your task details */ },
+      task_type: '1',
+      workflow_id: '1'
+    })
+
+    let response: ComfyUITaskResult
+    do {
+      result = await heurist.comfyui.queryTaskResult(task_id)
+      if (result.status === 'pending') {
+        await new Promise(resolve => setTimeout(resolve, 5000)) // Wait 5 seconds before querying again
+      }
+    } while (result.status === 'pending')
+  }
+
+  // response
+  // {...}
+
 ```
 
 ## Requirements

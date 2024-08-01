@@ -27,12 +27,14 @@ export class Heurist {
       )
     }
 
+    // TODO: add separate URL for comfyui service
     this.baseURL = baseURL || 'http://sequencer.heurist.xyz'
     this.apiKey = apiKey
   }
 
   images: API.Images = new API.Images(this)
   chat: API.Chat = new API.Chat(this)
+  comfyui: API.ComfyUI = new API.ComfyUI(this)
 }
 
 export * from './apis'
