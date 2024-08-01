@@ -12,3 +12,6 @@ export type {
   ChatCompletionMessageParam,
   ChatCompletionCreateParamsNonStreaming,
 } from './chat'
+
+export { Workflow, UpscalerTask } from './workflow'
+export type { WorkflowTaskResult, WorkflowTaskType } from './workflow'
