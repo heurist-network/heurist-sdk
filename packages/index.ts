@@ -8,6 +8,11 @@ export interface ClientOptions {
   baseURL?: string | null | undefined
 
   /**
+   * Defaults to process.env['HEURIST_WORKFLOW_URL'].
+   */
+  workflowURL?: string | null | undefined
+
+  /**
    * Defaults to process.env['HEURIST_API_KEY'].
    */
   apiKey?: string | undefined
@@ -15,10 +20,12 @@ export interface ClientOptions {
 
 export class Heurist {
   baseURL: string
+  workflowURL: string
   apiKey: string
 
   constructor({
     baseURL = readEnv('HEURIST_BASE_URL'),
+    workflowURL = readEnv('HEURIST_WORKFLOW_URL'),
     apiKey = readEnv('HEURIST_API_KEY'),
   }: ClientOptions = {}) {
     if (apiKey === undefined) {
@@ -28,11 +35,13 @@ export class Heurist {
     }
 
     this.baseURL = baseURL || 'http://sequencer.heurist.xyz'
+    this.workflowURL = workflowURL
     this.apiKey = apiKey
   }
 
   images: API.Images = new API.Images(this)
   chat: API.Chat = new API.Chat(this)
+  workflow: API.Workflow = new API.Workflow(this)
 }
 
 export * from './apis'
