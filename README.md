@@ -71,7 +71,8 @@ async function chat() {
   async function workflow() {
     const upscalerTask = new UpscalerTask({
         consumer_id: 'example-id',
-        image_url: 'https://example.com/sample.jpg'
+        image_url: 'https://example.com/sample.jpg',
+        timeout_seconds: 300 // optional
     });
 
     const response = await heurist.workflow.executeWorkflowAndWaitForResult(upscalerTask);

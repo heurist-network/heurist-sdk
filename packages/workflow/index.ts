@@ -8,15 +8,18 @@ export enum WorkflowTaskType {
 interface WorkflowTaskOptions {
   consumer_id: string;
   job_id_prefix?: string;
+  timeout_seconds?: number;
 }
 
 abstract class WorkflowTask {
   public consumer_id: string;
   public job_id_prefix?: string;
+  public timeout_seconds?: number;
   
   constructor(options: WorkflowTaskOptions) {
     this.consumer_id = options.consumer_id;
     this.job_id_prefix = options.job_id_prefix;
+    this.timeout_seconds = options.timeout_seconds;
   }
 
   abstract get task_type(): WorkflowTaskType;
@@ -46,7 +49,7 @@ export class UpscalerTask extends WorkflowTask {
 
 export interface WorkflowTaskResult {
   task_id: string
-  status: 'waiting' | 'running' | 'finished' | 'failed'
+  status: 'waiting' | 'running' | 'finished' | 'failed' | 'canceled'
   result?: any
 }
 
@@ -110,12 +113,16 @@ export class Workflow extends APIResource {
     const id = Randomstring.generate({ charset: 'hex', length: 10 })
     const job_id = `${job_id_prefix}-${id}`
 
-    const data = {
+    const data: any = {
       consumer_id: task.consumer_id,
       task_type: task.task_type,
       task_details: task.task_details,
       job_id
     };
+
+    if (task.timeout_seconds !== undefined) {
+      data.timeout_seconds = task.timeout_seconds;
+    }
 
     const response = await fetch(url, {
       method: 'POST',
@@ -155,5 +162,26 @@ export class Workflow extends APIResource {
 
       await new Promise(resolve => setTimeout(resolve, interval));
     }
+  }
+
+  async cancelTask(task_id: string): Promise<{ task_id: string; msg: string }> {
+    const url = `${this._client.workflowURL}/task_cancel`
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this._client.apiKey}`,
+    }
+    const data = { task_id }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Task cancellation failed: ${response.statusText}`)
+    }
+
+    return await response.json()
   }
 }
