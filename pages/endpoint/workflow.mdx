@@ -20,7 +20,8 @@ const heurist = new Heurist({
 async function main() {
   const upscalerTask = new UpscalerTask({
     consumer_id: 'example-id',
-    image_url: 'https://example.com/sample.jpg'
+    image_url: 'https://example.com/sample.jpg',
+    timeout_seconds: 300 // optional
   });
   const response = await heurist.workflow.executeWorkflowAndWaitForResult(upscalerTask);
 }
@@ -63,6 +64,12 @@ main()
       false,
       'An optional prefix for the job ID. Default is "sdk-workflow".',
     ],
+    [
+      'timeout_seconds',
+      'number',
+      false,
+      'An optional timeout for the task in seconds. If the task is not finished within the timeout, it will be canceled.',
+    ],
   ]}
 />
 
@@ -74,7 +81,7 @@ main()
   language="en"
   options={[
     ['task_id', 'string', true, 'The ID of the executed task.'],
-    ['status', '"waiting" | "running" | "finished" | "failed"', true, 'The status of the task.'],
+    ['status', '"waiting" | "running" | "finished" | "failed" | "canceled"', true, 'The status of the task.'],
     ['result', 'any', false, 'The result of the task, if available.'],
   ]}
 />
@@ -134,3 +141,13 @@ async queryTaskResult(task_id: string): Promise<WorkflowTaskResult>
 ```
 
 Returns a Promise that resolves to the task result.
+
+### cancelTask
+
+Cancels a previously submitted task.
+
+```ts
+async cancelTask(task_id: string): Promise<{ task_id: string; msg: string }>
+```
+
+Returns a Promise that resolves to the task ID and message.
