@@ -40,7 +40,6 @@ export class Heurist {
   }
 
   images: API.Images = new API.Images(this)
-  chat: API.Chat = new API.Chat(this)
   workflow: API.Workflow = new API.Workflow(this)
 }
 

@@ -45,29 +45,6 @@ async function generateImage() {
   // }
 }
 
-async function chat() {
-  const response = await heurist.chat.completions.create({
-    model: 'dolphin-2.9-llama3-8b',
-    messages: [{
-      role: 'system',
-      content: 'You are a helpful AI assistant'
-    },
-    {
-      role: 'user',
-      content: 'Explain Ethereum in 2 sentences'
-    }],
-    // below are optional
-    temperature: 0.7,
-    max_tokens: 2048
-  })
-}
-
-  // response
-  // {
-  //   "content": "Ethereum is a decentralized blockchain platform that enables developers to build and deploy smart contracts. It allows users to exchange value and perform transactions without the need for intermediaries like banks or financial institutions."
-  //   ...
-  // }
-
   async function workflow() {
     const upscalerTask = new UpscalerTask({
         consumer_id: 'example-id',
