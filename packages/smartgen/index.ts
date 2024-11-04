@@ -8,6 +8,7 @@ export interface BaseGenParams {
     model: string
     num_iterations?: number
     guidance_scale?: number
+    seed?: number  // Add seed
 }
 
 // Parameters specific to SD models
@@ -31,6 +32,15 @@ export interface FluxParams extends BaseGenParams {
 
 // Union type for all possible parameters
 export type SmartGenParams = SDParams | FluxParams
+
+export interface GenerateParams {
+    prompt: string
+    num_iterations: number
+    guidance_scale: number
+    negative_prompt?: string
+    seed?: number
+    originalDescription: string  // Add this to ensure it's passed through
+}
 
 export interface SmartGenResponse extends ImagesResponse {
     originalDescription: string
@@ -199,10 +209,8 @@ Be descriptive and creative. Return only the prompt without quotes or other mess
 
     private getDefaultParameters(model: string, quality?: string): Pick<ImageGenerateParams, 'num_iterations' | 'guidance_scale'> {
         const isFluxModel = model?.includes('FLUX')
-
         // Set default iterations based on quality
         const iterations = quality === 'high' ? 30 : 20
-
         // Set default guidance scale based on model type
         const defaultGuidance = isFluxModel ? 3 : 6
 
@@ -212,14 +220,8 @@ Be descriptive and creative. Return only the prompt without quotes or other mess
         }
     }
 
-    // Step 1: Get prompt and generation parameters
-    async getPrompt(params: SmartGenParams): Promise<{
-        prompt: string
-        num_iterations: number
-        guidance_scale: number
-        negative_prompt?: string
-        originalDescription: string
-    }> {
+    // Update getPrompt return type
+    async getPrompt(params: SmartGenParams): Promise<GenerateParams> {
         const isFluxModel = params.model?.includes('FLUX')
         let prompt: string
 
@@ -248,31 +250,31 @@ Be descriptive and creative. Return only the prompt without quotes or other mess
             originalDescription: params.description,
             ...defaultParams,
             ...(params.num_iterations && { num_iterations: params.num_iterations }),
-            ...(params.guidance_scale && { guidance_scale: params.guidance_scale })
+            ...(params.guidance_scale && { guidance_scale: params.guidance_scale }),
+            ...(params.seed && { seed: params.seed })  // Pass seed through
         }
     }
 
-    // Step 2: Generate image with given parameters
-    async generate(model: string, params: {
-        prompt: string
-        num_iterations: number
-        guidance_scale: number
-        negative_prompt?: string
-    }): Promise<SmartGenResponse> {
+    // Update generate method
+    async generate(model: string, params: GenerateParams): Promise<SmartGenResponse> {
         const response = await this._client.images.generate({
             model,
-            ...params
+            prompt: params.prompt,
+            num_iterations: params.num_iterations,
+            guidance_scale: params.guidance_scale,
+            ...(params.negative_prompt && { negative_prompt: params.negative_prompt }),
+            ...(params.seed && { seed: params.seed })  // Include seed in generation
         })
 
         return {
             url: response.url,
             model,
             enhancedPrompt: params.prompt,
-            originalDescription: params.prompt  // Consider passing original description if needed
+            originalDescription: params.originalDescription  // Use the passed originalDescription
         }
     }
 
-    // One-step convenience method
+    // One-step convenience method remains the same
     async createImage(params: SmartGenParams): Promise<SmartGenResponse> {
         const generationParams = await this.getPrompt(params)
         return this.generate(params.model, generationParams)
