@@ -161,7 +161,9 @@ Be descriptive and creative. Return only the prompt without quotes or other mess
             max_tokens: 200
         })
 
-        return completion.choices[0]?.message?.content?.trim() || description
+        // Apply cleanPrompt to the LLM response
+        const rawPrompt = completion.choices[0]?.message?.content?.trim() || description
+        return this.cleanPrompt(rawPrompt)
     }
 
     private async enhanceSDPrompt(description: string, style?: string, dimension?: string): Promise<string> {
@@ -190,21 +192,51 @@ Be descriptive and creative. Return only the prompt without quotes or other mess
             temperature: 0.7
         })
 
-        return this.cleanPrompt(completion.choices[0]?.message?.content?.trim() || description)
+        // Apply cleanPrompt to the LLM response
+        const rawPrompt = completion.choices[0]?.message?.content?.trim() || description
+        return this.cleanPrompt(rawPrompt)
     }
 
     private cleanPrompt(prompt: string): string {
         try {
+            // First clean any control characters
+            prompt = prompt.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+
             if (prompt.startsWith('[') || prompt.startsWith('{')) {
-                const parsed = JSON.parse(prompt)
-                if (Array.isArray(parsed)) {
-                    prompt = parsed[0]?.message?.content?.trim() || prompt
+                try {
+                    const parsed = JSON.parse(prompt)
+                    if (Array.isArray(parsed)) {
+                        // Handle array format
+                        prompt = parsed[0]?.message?.content?.trim() || prompt
+                    } else if (parsed.message?.content) {
+                        // Handle single object format
+                        prompt = parsed.message.content.trim()
+                    } else if (typeof parsed === 'string') {
+                        // Handle string format
+                        prompt = parsed.trim()
+                    }
+                } catch (parseError) {
+                    console.log('JSON parse error:', parseError)
+                    // If JSON parsing fails, try to extract content using regex
+                    const contentMatch = prompt.match(/"content":\s*"([^"]+)"/)
+                    if (contentMatch && contentMatch[1]) {
+                        prompt = contentMatch[1]
+                    }
                 }
             }
+
+            // Clean up any remaining quotes, whitespace, and escaped characters
+            prompt = prompt
+                .replace(/^["'\s]+|["'\s]+$/g, '')  // Remove quotes and whitespace at ends
+                .replace(/\\n/g, ' ')  // Replace escaped newlines with spaces
+                .replace(/\\"/g, '"')  // Replace escaped quotes with regular quotes
+                .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+
+            return prompt
         } catch (e) {
-            console.log('Error parsing LLM response:', e)
+            console.log('Error cleaning prompt:', e)
+            return prompt
         }
-        return prompt.replace(/^["'\s]+|["'\s]+$/g, '')
     }
 
     private getDefaultParameters(model: string, quality?: string): Pick<ImageGenerateParams, 'num_iterations' | 'guidance_scale'> {
