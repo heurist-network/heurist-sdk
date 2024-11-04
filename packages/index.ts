@@ -41,6 +41,7 @@ export class Heurist {
 
   images: API.Images = new API.Images(this)
   workflow: API.Workflow = new API.Workflow(this)
+  smartgen: API.SmartGen = new API.SmartGen(this)
 }
 
 export * from './apis'
