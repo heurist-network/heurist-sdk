@@ -6,11 +6,13 @@ export interface SmartGenParams {
     description: string
     style?: 'realistic' | 'abstract' | 'artistic' | 'balanced'
     dimension?: '2D' | '3D' | 'isometric'
-    quality?: 'draft' | 'balanced' | 'high-detail'
+    quality?: 'normal' | 'high'
     model: string
+    // Optional manual overrides
+    num_iterations?: number
+    guidance_scale?: number
 }
 
-// Adding the missing interface definition
 export interface SmartGenResponse extends ImagesResponse {
     originalDescription: string
     enhancedPrompt: string
@@ -22,15 +24,15 @@ export class SmartGen extends APIResource {
     constructor(client) {
         super(client)
         this.openai = new OpenAI({
-            apiKey: "mingruidev#5gds35j",
+            apiKey: process.env.HEURIST_API_KEY,
             baseURL: "https://llm-gateway.heurist.xyz",
         })
     }
 
     private async enhancePromptWithLLM(description: string, style?: string, dimension?: string, model?: string): Promise<string> {
-        const isFluxModel = model?.includes('FLUX') // TODO: read model type from models.json
+        const isFluxModel = model?.includes('FLUX')
 
-        const systemPrompt = "You are an expert in writing prompts for AI art. You use accurate, descriptive, and creative language.";
+        const systemPrompt = "You are an expert in writing prompts for AI art. You use accurate, descriptive, and creative language."
 
         const userPrompt = isFluxModel ?
             // Flux prompt template
@@ -90,23 +92,18 @@ export class SmartGen extends APIResource {
         return enhancedPrompt
     }
 
-    private getParametersForQuality(quality: string = 'balanced'): Pick<ImageGenerateParams, 'num_iterations' | 'guidance_scale'> {
-        switch (quality) {
-            case 'draft':
-                return {
-                    num_iterations: 20,
-                    guidance_scale: 5
-                }
-            case 'high-detail':
-                return {
-                    num_iterations: 40,
-                    guidance_scale: 8
-                }
-            default:
-                return {
-                    num_iterations: 30,
-                    guidance_scale: 7
-                }
+    private getDefaultParameters(model: string, quality: string = 'normal'): Pick<ImageGenerateParams, 'num_iterations' | 'guidance_scale'> {
+        const isFluxModel = model?.includes('FLUX')
+
+        // Set default iterations based on quality
+        const iterations = quality === 'high' ? 30 : 20
+
+        // Set default guidance scale based on model type
+        const defaultGuidance = isFluxModel ? 3 : 6
+
+        return {
+            num_iterations: iterations,
+            guidance_scale: defaultGuidance
         }
     }
 
@@ -115,25 +112,35 @@ export class SmartGen extends APIResource {
             description,
             style = 'balanced',
             dimension = '2D',
-            quality = 'balanced',
-            model
+            quality = 'normal',
+            model,
+            // Allow optional parameter overrides
+            num_iterations,
+            guidance_scale
         } = params
 
         // Get enhanced prompt from LLM
         const enhancedPrompt = await this.enhancePromptWithLLM(description, style, dimension, model)
         console.log('enhancedPrompt', enhancedPrompt)
 
-        // Get optimal parameters
-        const qualityParams = this.getParametersForQuality(quality)
+        // Get default parameters based on model and quality
+        const defaultParams = this.getDefaultParameters(model, quality)
+
+        // Override with user-provided parameters if they exist
+        const finalParams = {
+            ...defaultParams,
+            ...(num_iterations && { num_iterations }),
+            ...(guidance_scale && { guidance_scale })
+        }
 
         // Generate the image
         const response = await this._client.images.generate({
             model,
             prompt: enhancedPrompt,
-            ...qualityParams
+            ...finalParams
         })
 
-        // Return only necessary fields, avoiding duplication
+        // Return only necessary fields
         return {
             url: response.url,
             model: response.model,
