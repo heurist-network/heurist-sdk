@@ -28,28 +28,30 @@ export class SmartGen extends APIResource {
     }
 
     private async enhancePromptWithLLM(description: string, style?: string, dimension?: string, model?: string): Promise<string> {
-        const isFluxModel = model?.includes('FLUX')
+        const isFluxModel = model?.includes('FLUX') // TODO: read model type from models.json
 
-        const systemPrompt = isFluxModel ?
-            `You are an expert in creating prompts for Flux AI art. Important techniques to create high-quality prompts: 
+        const systemPrompt = "You are an expert in writing prompts for AI art. You use accurate, descriptive, and creative language.";
+
+        const userPrompt = isFluxModel ?
+            // Flux prompt template
+            `Important techniques to create high-quality prompts: 
             1. Focus on detailed visual descriptions
             2. Include character details, environments, and lighting
             3. Describe the scene in a clear, narrative way
             4. Keep descriptions under 50 words
             5. Be direct and straightforward
             6. Avoid metaphors or "like" comparisons
-            Example: A blonde anime character in a white dress stands confidently in a modern trading room. Holographic stock charts float around her. Moonlight streams through tall windows, casting blue highlights on her determined expression.` :
-            `You are an expert in writing AI image generation prompts for Stable Diffusion. Important techniques:
-            1. Separate tags with commas
-            2. Use technical tags (4k, wide-angle, UHD)
+            Example: A girl with blonde ponytail in a white dress stands confidently in a modern trading room. Holographic stock charts float around her. Moonlight streams through tall windows, casting blue highlights on her determined expression.
+            Create a detailed about: "${description}". Include the visual style ${style || 'balanced'} and ${dimension || '2D'} perspective. Be descriptive and direct. Return only the description without quotes.` :
+            // SD prompt template
+            `Important techniques to create high-quality prompts:
+            1. Always use tags separated by commas
+            2. Use technical tags such as 4k, wide-angle, UHD
             3. Use () with numbers for emphasis (element:1.3)
             4. Include lighting and environment tags
             5. Maximum 16 tags
-            6. Keep each tag brief`
-
-        const userPrompt = isFluxModel ?
-            `Create a detailed visual description for: "${description}". Include the visual style ${style || 'balanced'} and ${dimension || '2D'} perspective. Be descriptive and direct. Return only the description without quotes.` :
-            `Create a detailed prompt for: "${description}". Style should be ${style || 'balanced'} and perspective ${dimension || '2D'}. Return only comma-separated tags without quotes.`
+            6. Keep each tag brief
+            Create a detailed prompt for: "${description}". Style should be ${style || 'balanced'} and perspective ${dimension || '2D'}. Return only comma-separated tags without quotes.`
 
         const completion = await this.openai.chat.completions.create({
             model: "mistralai/mixtral-8x7b-instruct",
