@@ -69,8 +69,21 @@ export class SmartGen extends APIResource {
 
         let enhancedPrompt = completion.choices[0]?.message?.content?.trim() || description
 
+        try {
+            // Check if the response is a JSON string
+            if (enhancedPrompt.startsWith('[') || enhancedPrompt.startsWith('{')) {
+                const parsed = JSON.parse(enhancedPrompt)
+                if (Array.isArray(parsed)) {
+                    enhancedPrompt = parsed[0]?.message?.content?.trim() || description
+                }
+            }
+        } catch (e) {
+            // If JSON parsing fails, use the original string
+            console.log('Error parsing LLM response:', e)
+        }
+
         // Clean up any extra quotes or formatting
-        enhancedPrompt = enhancedPrompt.replace(/^["']|["']$/g, '').trim()
+        enhancedPrompt = enhancedPrompt.replace(/^["'\s]+|["'\s]+$/g, '')
 
         return enhancedPrompt
     }
@@ -118,10 +131,12 @@ export class SmartGen extends APIResource {
             ...qualityParams
         })
 
+        // Return only necessary fields, avoiding duplication
         return {
-            ...response,
-            originalDescription: description,
-            enhancedPrompt
+            url: response.url,
+            model: response.model,
+            enhancedPrompt,
+            originalDescription: description
         }
     }
 }
