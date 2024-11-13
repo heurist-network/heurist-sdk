@@ -6,5 +6,5 @@ export type {
   ImagesResponse,
 } from './images'
 
-export { Workflow, UpscalerTask } from './workflow'
+export { Workflow, UpscalerTask, FluxLoraTask } from './workflow'  // Added FluxLoraTask
 export type { WorkflowTaskResult, WorkflowTaskType } from './workflow'
