@@ -141,64 +141,36 @@ export class SmartGen extends APIResource {
         
         const guidelines = {
             stylization: {
-                description: 'Controls the balance between realism and artistic interpretation\n' +
-                    '1: Photorealistic - true-to-life representation\n' +
-                    '2: High realism with minimal artistic elements\n' +
+                description: 'On a scale 1~5 Controls the balance between realism and stylization\n' +
+                    '1: Photorealistic - true-to-life\n' +
+                    '2: High realism with slight artistic touch\n' +
                     '3: Balanced blend of realism and artistic style\n' +
-                    '4: Prominently artistic with traces of realism\n' +
+                    '4: Clearly stylized art\n' +
                     '5: Highly abstract/artistic interpretation',
-                target: {
-                    1: '1 - Maintain strict photorealism',
-                    2: '2 - Slight artistic touches while preserving realism',
-                    3: '3 - Balance realism with artistic interpretation',
-                    4: '4 - Emphasize artistic style over realism',
-                    5: '5 - Create highly stylized artistic interpretation'
-                }
             },
             detail: {
-                description: 'Controls the level of detail and complexity\n' +
+                description: 'On a scale 1~5 Controls the level of detail and intricacy\n' +
                     '1: Minimalist, essential elements only\n' +
                     '2: Clean and simple\n' +
-                    '3: Balanced natural level of detail\n' +
-                    '4: Rich detailed elements\n' +
-                    '5: Intricate, complex detailing',
-                target: {
-                    1: '1 - Keep it minimal',
-                    2: '2 - Include selective clean elements',
-                    3: '3 - Balance detail level for natural look',
-                    4: '4 - Include rich, meaningful details',
-                    5: '5 - Extremely intricate, hyper-detailed'
-                }
+                    '3: Balanced detail level\n' +
+                    '4: Rich in details\n' +
+                    '5: Extremely intricate, hyper-detailed',
             },
             color: {
-                description: 'Controls color intensity and saturation\n' +
-                    '1: Muted, subdued colors\n' +
-                    '2: Soft, understated palette\n' +
+                description: 'On a scale 1~5 Controls color intensity and saturation\n' +
+                    '1: Monochromatic/grayscale\n' +
+                    '2: Muted, subdued colors\n' +
                     '3: Natural, true-to-life colors\n' +
                     '4: Enhanced vibrancy\n' +
-                    '5: Intense, vivid colors',
-                target: {
-                    1: '1 - Use muted, subtle colors',
-                    2: '2 - Use soft, understated palette',
-                    3: '3 - Create natural, balanced colors',
-                    4: '4 - Enhanced color vibrancy',
-                    5: '5 - Highly intense, hyper-saturated colors'
-                }
+                    '5: Hyper-saturated, intense colors',
             },
             lighting: {
-                description: 'Controls lighting intensity and contrast\n' +
+                description: 'On a scale 1~5 Controls lighting intensity and contrast\n' +
                     '1: Flat, even lighting\n' +
                     '2: Soft, diffused illumination\n' +
                     '3: Natural, balanced lighting\n' +
                     '4: High contrast, dramatic lighting\n' +
                     '5: Extreme dramatic lighting',
-                target: {
-                    1: '1 - Soft, even lighting',
-                    2: '2 - Gentle, diffused illumination',
-                    3: '3 - Balanced, natural lighting',
-                    4: '4 - Strong contrast and dramatic lighting',
-                    5: '5 - Extremely Dramatic, high-contrast lighting'
-                }
             }
         };
     
@@ -211,10 +183,11 @@ export class SmartGen extends APIResource {
     
         const dimension = dimensionMap[dimensionType as keyof typeof dimensionMap];
         if (!dimension) return null;
+        if (validLevel == 3) return null; // eliminate middle value
     
-        return `Dimension ${dimensionType.toUpperCase()}:\n(on a scale 1~5):\n` +
+        return `Dimension ${dimensionType.toUpperCase()}:\n` +
                `${guidelines[dimension].description}\n\n` +
-               `We want to create a prompt with ${dimensionType} level ${guidelines[dimension].target[validLevel]}. Think carefully. Naturally integrate this aspect into your final prompt without explicitly mentioning the level number.`;
+               `We want to create a prompt with ${dimensionType} level ${validLevel}. Think carefully. Naturally integrate this aspect into your final prompt without explicitly mentioning the level number.`;
     }
 
     private createFluxUserPrompt(params: CreatePromptParams): string {
@@ -231,7 +204,7 @@ export class SmartGen extends APIResource {
         let prompt = `Create a detailed visual prompt following these guidelines:
     
     KEY REQUIREMENTS:
-    - The prompt describes the contents and styles of the image, not imperative
+    - The prompt describes the contents and styles of the image. Don't say "create an image of ..." but just write the description.
     - Keep the final prompt under 50 words
     - Focus on visual elements and composition
     - Be direct and straightforward
