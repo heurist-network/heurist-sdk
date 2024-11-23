@@ -6,5 +6,8 @@ export type {
   ImagesResponse,
 } from './images'
 
-export { Workflow, UpscalerTask, FluxLoraTask } from './workflow'  // Added FluxLoraTask
+export { Workflow, UpscalerTask, FluxLoraTask } from './workflow'
 export type { WorkflowTaskResult, WorkflowTaskType } from './workflow'
+
+export { SmartGen } from './smartgen'
+export type { SmartGenParams, SmartGenResponse } from './smartgen'

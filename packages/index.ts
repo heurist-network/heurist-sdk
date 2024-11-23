@@ -22,6 +22,9 @@ export class Heurist {
   baseURL: string
   workflowURL: string
   apiKey: string
+  images: API.Images
+  workflow: API.Workflow
+  smartgen: API.SmartGen
 
   constructor({
     baseURL = readEnv('HEURIST_BASE_URL'),
@@ -37,10 +40,10 @@ export class Heurist {
     this.baseURL = baseURL || 'http://sequencer.heurist.xyz'
     this.workflowURL = workflowURL
     this.apiKey = apiKey
+    this.images = new API.Images(this)
+    this.workflow = new API.Workflow(this)
+    this.smartgen = new API.SmartGen(this)
   }
-
-  images: API.Images = new API.Images(this)
-  workflow: API.Workflow = new API.Workflow(this)
 }
 
 export * from './apis'
