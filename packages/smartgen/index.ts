@@ -10,11 +10,11 @@ export interface SmartGenParams {
     language_model?: string   // default: nvidia/llama-3.1-nemotron-70b-instruct
     is_sd?: boolean           // true if we want to use stable diffusion prompt format (comma-separated phrases)
     must_include?: string     // this word/phrase will be always included in the prompt without altering
-    examples?: string         // example prompt(s)
+    examples?: string[]       // example prompt(s)
     negative_prompt?: string  // only applies to SD
     quality?: 'normal' | 'high', // 20 iterations for normal, 30 iterations for high
     num_iterations?: number   // if not specified, use 20 by default. if specified, this overrides quality setting
-    guidance_scale?: number   // if not specified, use 5
+    guidance_scale?: number
     stylization_level?: number // 1-5
     detail_level?: number      // 1-5
     color_level?: number       // 1-5
@@ -22,16 +22,12 @@ export interface SmartGenParams {
     param_only?: boolean     // default is false. if this is true, only return the prompt and other params
 }
 
-export interface SmartGenResponse extends ImagesResponse {
-    enhancedPrompt: string
-}
-
 interface CreatePromptParams {
     description: string;
     is_sd?: boolean,
     language_model?: string;
     must_include?: string;
-    examples?: string;
+    examples?: string[];
     stylization_level?: number;
     detail_level?: number;
     color_level?: number;
@@ -120,8 +116,8 @@ export class SmartGen extends APIResource {
         try {
             const response = await this._client.images.generate(generationParams);
             return {
-            url: response.url,
-            parameters: generationParams
+                url: response.url,
+                parameters: generationParams
             };
         } catch (error) {
             console.error('Image generation failed:', error);
@@ -222,7 +218,7 @@ export class SmartGen extends APIResource {
     
         if (examples) {
             prompt += `\nPROMPT FORMAT REFERENCE:
-    Example prompt(s) to match format: ${examples}`;
+    Example prompt(s) to match format: ${examples.map((example, index) => `${index + 1}. ${example}`).join('\n    ')}`;
         }
     
         // Only add dimension guidelines section if any dimensions are specified

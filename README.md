@@ -72,8 +72,8 @@ async function generateImage() {
 
 ```
 
-## Smart Generation (Experimental)
-> ⚠️ **Experimental Feature**: Smart Generation is currently in beta. APIs and behaviors may change.
+## SmartGen for Image Generation (Experimental)
+> ⚠️ **Experimental Feature**: SmartGen is currently in beta. APIs and behaviors may change.
 
 ### Overview
 SmartGen provides a high-level interface for generating images with enhanced prompt engineering and dimension controls. It supports both FLUX and Stable Diffusion models.
@@ -100,27 +100,37 @@ const response = await heurist.smartgen.generateImage({
 SmartGen accepts the following key parameters:
 ```ts
 {
+    // Basic settings
     description: string,    // Main image description
-    image_model: string,   // Default: FLUX.1-dev
+    width?: number
+    height?: number
+
+    // AI model settings
+    image_model?: string,   // Default: FLUX.1-dev
+    is_sd?: boolean          // Default: false. Set it to true if we want to use stable diffusion prompt format (comma-separated phrases)
+    language_model?: string  // Default: nvidia/llama-3.1-nemotron-70b-instruct. For image prompt generation
     
     // Dimension controls (all optional, scale 1-5)
-    stylization_level: number,  // Realism vs artistic style
-    detail_level: number,       // Amount of detail
-    color_level: number,        // Color intensity
-    lighting_level: number,     // Lighting drama
+    stylization_level: number,  // Realism vs artistic style. 1: Photorealistic 5: Highly artistic
+    detail_level: number,       // Amount of detail. 1: Minimalist 5: Extreme intricate
+    color_level: number,        // Color intensity. 1: Monochromatic 5: Hyper-saturated
+    lighting_level: number,     // Lighting drama. 1: Flat, even lighting 5: Extreme dramatic lighting
     
     // Optional parameters
-    must_include?: string,     // Elements to always include
-    examples?: string,         // Example prompts for reference
+    must_include?: string,       // Elements to always include without altering
+    examples?: string[],         // Example prompts for reference
     quality?: 'normal' | 'high', // Controls iteration count
-    param_only?: boolean       // Get params without generating
+    num_iterations?: number      // Default is 20. If specified, this overrides quality setting
+    guidance_scale?: number      // Default is 3 for Flux and 6 for Stable Diffusion
+    negative_prompt?: string     // Negative prompt, only applies to Stable Diffusion
+    param_only?: boolean         // Default: false. Set it to true if we want to return params without generating the image
 }
 ```
 
 ### Two-Step Generation
 You can split the generation process into two steps:
 ```ts
-// Step 1: Get generation parameters
+// Step 1: Get image generation parameters
 const params = await heurist.smartgen.generateImage({
   description: "A cyberpunk cityscape",
   image_model: "FLUX.1-dev",
@@ -132,36 +142,43 @@ const params = await heurist.smartgen.generateImage({
 // Review and modify parameters if needed
 console.log(params.parameters.prompt)
 
-// Step 2: Generate with the same or modified parameters
-const imageResult = await heurist.smartgen.generateImage({
-  ...params,
-  param_only: false
+// Step 2: Call `images.generate` API to generate with the same or modified parameters
+const imageResult = await heurist.images.generate({
+  ...params.parameters
+  // You may change some fields
 })
 ```
 
-### Response Types
-Parameters Only Response
+### Response Type in Parameter-only Mode (`param_only` set to true)
 ```ts
 {
   parameters: {
-    prompt: string,          // Enhanced prompt
+    prompt: string,     // Enhanced prompt
+    model: string,
+    width: number,
+    height: number,
     num_iterations: number,
     guidance_scale: number,
-    model: string,
+    neg_prompt?: string,
   }
 }
 ```
-Full Generation Response
-```
-{
-  url: string,              // Generated image URL
-  model: string,            // Model used
-  enhancedPrompt: string,   // Final prompt used
-  parameters: {             // Generation parameters
-    num_iterations: number,
-    guidance_scale: number
-  }
-}
+
+### One-Step Generation
+You can create an image with a simple description in one step:
+```ts
+const result = await heurist.smartgen.generateImage({
+  description: "A cyberpunk cityscape",
+  image_model: "FLUX.1-dev",
+  stylization_level: 4,
+  must_include: "neon lights, flying cars"
+})
+
+// Result image URL
+console.log(result.url)
+
+// You can inspect the image generation parameters
+console.log(result.parameters)
 ```
 ### Demonstration
 Here are two examples showcasing the progression from monochromatic to vibrant colors (`color_level` from 1 to 5):
@@ -171,6 +188,3 @@ Here are two examples showcasing the progression from monochromatic to vibrant c
 
 #### Example 2: "Hot air balloons in the sky"
 ![image](https://imagedelivery.net/0LwqpAMWL2C8o12h9UoZew/def7efa4-6d38-48ac-c919-d242de544900/public)
-
-
-
