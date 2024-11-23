@@ -1,5 +1,4 @@
 import { APIResource } from 'heurist/resource'
-import { ImageGenerateParams, ImagesResponse } from '../images'
 import OpenAI from 'openai'
 
 export interface SmartGenParams {
@@ -56,8 +55,8 @@ export class SmartGen extends APIResource {
     }
 
     async generateImage(params: SmartGenParams): Promise<
-    | { parameters: Record<string, any> }
-    | { url: string; parameters: Record<string, any> }
+        | { parameters: Record<string, any> }
+        | { url: string; parameters: Record<string, any> }
     > {
         // Set defaults
         const {
@@ -82,16 +81,16 @@ export class SmartGen extends APIResource {
 
         // Prepare LLM prompt based on model type
         let enhancedPrompt = await this.enhancePrompt({
-                description: params.description,
-                is_sd: params.is_sd,
-                must_include: params.must_include,
-                examples: params.examples,
-                language_model: params.language_model,
-                stylization_level: this.validateDimensionLevel(params.stylization_level),
-                detail_level: this.validateDimensionLevel(params.detail_level),
-                color_level: this.validateDimensionLevel(params.color_level),
-                lighting_level: this.validateDimensionLevel(params.lighting_level)
-            });
+            description: params.description,
+            is_sd: params.is_sd,
+            must_include: params.must_include,
+            examples: params.examples,
+            language_model: params.language_model,
+            stylization_level: this.validateDimensionLevel(params.stylization_level),
+            detail_level: this.validateDimensionLevel(params.detail_level),
+            color_level: this.validateDimensionLevel(params.color_level),
+            lighting_level: this.validateDimensionLevel(params.lighting_level)
+        });
 
         // Calculate iterations
         const iterations = num_iterations ?? (quality === 'high' ? 30 : 20);
@@ -131,10 +130,10 @@ export class SmartGen extends APIResource {
 
     private getDimensionGuideline(level: number | undefined, dimensionType: string): string | null {
         if (level === undefined) return null;
-        
+
         // Ensure level is between 1-5
         const validLevel = Math.min(Math.max(Math.round(level), 1), 5);
-        
+
         const guidelines = {
             stylization: {
                 description: 'On a scale 1~5 Controls the balance between realism and stylization\n' +
@@ -169,21 +168,21 @@ export class SmartGen extends APIResource {
                     '5: Extreme dramatic lighting',
             }
         };
-    
+
         const dimensionMap = {
             stylization: 'stylization',
             detail: 'detail',
             color: 'color',
             lighting: 'lighting'
         } as const;
-    
+
         const dimension = dimensionMap[dimensionType as keyof typeof dimensionMap];
         if (!dimension) return null;
         if (validLevel == 3) return null; // eliminate middle value
-    
+
         return `Dimension ${dimensionType.toUpperCase()}:\n` +
-               `${guidelines[dimension].description}\n\n` +
-               `We want to create a prompt with ${dimensionType} level ${validLevel}. Think carefully. Naturally integrate this aspect into your final prompt without explicitly mentioning the level number.`;
+            `${guidelines[dimension].description}\n\n` +
+            `We want to create a prompt with ${dimensionType} level ${validLevel}. Think carefully. Naturally integrate this aspect into your final prompt without explicitly mentioning the level number.`;
     }
 
     private createFluxUserPrompt(params: CreatePromptParams): string {
@@ -196,7 +195,7 @@ export class SmartGen extends APIResource {
             color_level,
             lighting_level
         } = params;
-    
+
         let prompt = `Create a detailed visual prompt following these guidelines:
     
     KEY REQUIREMENTS:
@@ -210,17 +209,17 @@ export class SmartGen extends APIResource {
     CORE IMAGE DESCRIPTION:
     "${description}"
     `;
-    
+
         if (must_include) {
             prompt += `\nREQUIRED ELEMENTS:
     Must include this description without altering the texts: "${must_include}"`;
         }
-    
+
         if (examples) {
             prompt += `\nPROMPT FORMAT REFERENCE:
     Example prompt(s) to match format: ${examples.map((example, index) => `${index + 1}. ${example}`).join('\n    ')}`;
         }
-    
+
         // Only add dimension guidelines section if any dimensions are specified
         const dimensions = [
             this.getDimensionGuideline(stylization_level, 'stylization'),
@@ -248,7 +247,7 @@ export class SmartGen extends APIResource {
             color_level,
             lighting_level
         } = params;
-    
+
         let prompt = `Create a detailed visual prompt following these guidelines:
 
     - Structure: comma-separated descriptive words and phrases only
@@ -261,17 +260,17 @@ export class SmartGen extends APIResource {
     CORE IMAGE DESCRIPTION:
     "${description}"
     `;
-    
+
         if (must_include) {
             prompt += `\nREQUIRED ELEMENTS:
     Must include this description without altering the texts: "${must_include}"`;
         }
-    
+
         if (examples) {
             prompt += `\nPROMPT FORMAT REFERENCE:
     Example prompt(s) to match format: ${examples}`;
         }
-    
+
         // Only add dimension guidelines section if any dimensions are specified
         const dimensions = [
             this.getDimensionGuideline(stylization_level, 'stylization'),
@@ -300,7 +299,7 @@ export class SmartGen extends APIResource {
                 content: params.is_sd ? this.createStableDiffusionUserPrompt(params) : this.createFluxUserPrompt(params)
             }
         ];
-    
+
         try {
             const completion = await this.openai.chat.completions.create({
                 model: params.language_model ?? "mistralai/mixtral-8x7b-instruct",
@@ -308,7 +307,7 @@ export class SmartGen extends APIResource {
                 temperature: 0.7,
                 max_tokens: 200
             });
-    
+
             const rawPrompt = completion.choices[0]?.message?.content?.trim() || params.description;
             return this.cleanPrompt(rawPrompt);
         } catch (error) {
