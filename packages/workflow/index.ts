@@ -2,7 +2,8 @@ import { APIResource } from 'heurist/resource'
 import Randomstring from 'randomstring'
 
 export enum WorkflowTaskType {
-  Upscaler = 'upscaler'
+  Upscaler = 'upscaler',
+  FluxLora = 'flux-lora'
 }
 
 interface WorkflowTaskOptions {
@@ -15,7 +16,7 @@ abstract class WorkflowTask {
   public consumer_id: string;
   public job_id_prefix?: string;
   public timeout_seconds?: number;
-  
+
   constructor(options: WorkflowTaskOptions) {
     this.consumer_id = options.consumer_id;
     this.job_id_prefix = options.job_id_prefix;
@@ -44,6 +45,55 @@ export class UpscalerTask extends WorkflowTask {
 
   get task_details(): Record<string, any> {
     return { parameters: { image: this.image_url } };
+  }
+}
+
+interface FluxLoraTaskOptions extends WorkflowTaskOptions {
+  prompt: string;
+  aspect_ratio?: string;
+  width?: number;
+  height?: number;
+  guidance?: number;
+  steps?: number;
+  lora_name: string;
+}
+
+export class FluxLoraTask extends WorkflowTask {
+  private prompt: string;
+  private aspect_ratio: string;
+  private width: number;
+  private height: number;
+  private guidance: number;
+  private steps: number;
+  private lora_name: string;
+
+  constructor(options: FluxLoraTaskOptions) {
+    super(options);
+    this.prompt = options.prompt;
+    this.aspect_ratio = options.aspect_ratio || 'custom';
+    this.width = options.width || 1024;
+    this.height = options.height || 1024;
+    this.guidance = options.guidance || 6;
+    this.steps = options.steps || 20;
+    this.lora_name = options.lora_name;
+  }
+
+  get task_type(): WorkflowTaskType {
+    return WorkflowTaskType.FluxLora;
+  }
+
+  get task_details(): Record<string, any> {
+    return {
+      parameters: {
+        prompt: this.prompt,
+        aspect_ratio: this.aspect_ratio,
+        width: this.width,
+        height: this.height,
+        guidance: this.guidance,
+        steps: this.steps,
+        lora_name: this.lora_name
+      }
+    };
   }
 }
 
@@ -144,7 +194,7 @@ export class Workflow extends APIResource {
     interval: number = 10000
   ): Promise<WorkflowTaskResult> {
     if (interval < 1000) {
-        throw new Error('Interval should be more than 1000 (1 second)')
+      throw new Error('Interval should be more than 1000 (1 second)')
     }
 
     const task_id = await this.executeWorkflow(task);

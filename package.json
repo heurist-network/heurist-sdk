@@ -1,10 +1,27 @@
 {
   "name": "heurist",
-  "version": "0.0.28",
+  "version": "0.0.30",
   "description": "The official TypeScript library for Heurist AI Inference",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./workflow": {
+      "import": "./dist/workflow/index.mjs",
+      "require": "./dist/workflow/index.js",
+      "types": "./dist/workflow/index.d.ts"
+    },
+    "./resource": {
+      "import": "./dist/resource.mjs",
+      "require": "./dist/resource.js",
+      "types": "./dist/resource.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
