@@ -25,7 +25,6 @@
   },
   "homepage": "https://heurist.ai",
   "dependencies": {
-    "heurist": "^0.0.27",
     "randomstring": "1.3.0"
   },
   "devDependencies": {
