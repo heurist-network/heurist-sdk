@@ -20,9 +20,15 @@
     "jsx": "preserve",
     "baseUrl": "./",
     "paths": {
-      "@components/*": ["components/*"],
-      "heurist/*": ["packages/*"],
-      "heurist": ["packages/index.ts"]
+      "@components/*": [
+        "components/*"
+      ],
+      "heurist/*": [
+        "packages/*"
+      ],
+      "heurist": [
+        "packages/index.ts"
+      ]
     },
     "isolatedModules": true
   },
@@ -32,6 +38,8 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "test",
+    "**/*.test.ts"
   ]
 }
