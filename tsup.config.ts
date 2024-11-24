@@ -9,5 +9,21 @@ export default defineConfig((options) => ({
   sourcemap: true,
   dts: true,
   minify: true,
+  external: [
+    'openai',
+    'punycode',
+    'url',
+    'querystring',
+    'http',
+    'https',
+    'zlib',
+    'stream',
+    'buffer',
+    'util',
+    'tty',
+    'os'
+  ],
+  noExternal: ['./packages/**'],
+  platform: 'node',
   ...options,
 }))
