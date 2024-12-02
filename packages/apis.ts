@@ -6,7 +6,7 @@ export type {
   ImagesResponse,
 } from './images'
 
-export { Workflow, UpscalerTask, FluxLoraTask } from './workflow'
+export { Workflow, UpscalerTask, FluxLoraTask, Text2VideoTask } from './workflow'
 export type { WorkflowTaskResult, WorkflowTaskType } from './workflow'
 
 export { SmartGen } from './smartgen'

@@ -1,26 +1,41 @@
-import { APIResource } from 'heurist/resource'
+import { APIResource } from '../resource'
 import Randomstring from 'randomstring'
+
+function parseApiKeyString(combinedKey: string): { consumerId: string; apiKey: string } {
+  const [consumerId, apiKey] = combinedKey.split('#');
+  return {
+    consumerId: consumerId || '',
+    apiKey: apiKey || ''
+  };
+}
 
 export enum WorkflowTaskType {
   Upscaler = 'upscaler',
-  FluxLora = 'flux-lora'
+  FluxLora = 'flux-lora',
+  Text2Video = 'txt2vid'
 }
 
 interface WorkflowTaskOptions {
-  consumer_id: string;
+  consumer_id?: string;
   job_id_prefix?: string;
   timeout_seconds?: number;
+  workflow_id?: string;
+  api_key?: string;
 }
 
 abstract class WorkflowTask {
-  public consumer_id: string;
+  public consumer_id?: string;
   public job_id_prefix?: string;
   public timeout_seconds?: number;
+  public workflow_id?: string;
+  public api_key?: string;
 
   constructor(options: WorkflowTaskOptions) {
     this.consumer_id = options.consumer_id;
     this.job_id_prefix = options.job_id_prefix;
     this.timeout_seconds = options.timeout_seconds;
+    this.workflow_id = options.workflow_id;
+    this.api_key = options.api_key;
   }
 
   abstract get task_type(): WorkflowTaskType;
@@ -97,6 +112,59 @@ export class FluxLoraTask extends WorkflowTask {
   }
 }
 
+interface Text2VideoTaskOptions extends WorkflowTaskOptions {
+  prompt: string;
+  width?: number;
+  height?: number;
+  length?: number;
+  steps?: number;
+  seed?: number;
+  fps?: number;
+  quality?: number;
+}
+
+export class Text2VideoTask extends WorkflowTask {
+  private prompt: string;
+  private width: number;
+  private height: number;
+  private length: number;
+  private steps: number;
+  private seed: number;
+  private fps: number;
+  private quality: number;
+
+  constructor(options: Text2VideoTaskOptions) {
+    super(options);
+    this.prompt = options.prompt;
+    this.width = options.width || 848;
+    this.height = options.height || 480;
+    this.length = options.length || 37;
+    this.steps = options.steps || 30;
+    this.seed = options.seed || Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+    this.fps = options.fps || 24;
+    this.quality = options.quality || 80;
+  }
+
+  get task_type(): WorkflowTaskType {
+    return WorkflowTaskType.Text2Video;
+  }
+
+  get task_details(): Record<string, any> {
+    return {
+      parameters: {
+        prompt: this.prompt,
+        width: this.width,
+        height: this.height,
+        length: this.length,
+        steps: this.steps,
+        seed: this.seed,
+        fps: this.fps,
+        quality: this.quality
+      }
+    };
+  }
+}
+
 export interface WorkflowTaskResult {
   task_id: string
   status: 'waiting' | 'running' | 'finished' | 'failed' | 'canceled'
@@ -104,8 +172,18 @@ export interface WorkflowTaskResult {
 }
 
 export class Workflow extends APIResource {
+  private defaultConsumerId: string;
+  private defaultApiKey: string;
+
+  constructor(client: any) {
+    super(client);
+    const { consumerId, apiKey } = parseApiKeyString(this._client.apiKey);
+    this.defaultConsumerId = consumerId;
+    this.defaultApiKey = apiKey;
+  }
+
   async executeWorkflow(task: WorkflowTask): Promise<string> {
-    await this.resourceRequest(task.consumer_id)
+    await this.resourceRequest(task.consumer_id || this.defaultConsumerId)
     const task_id = await this.createTask(task)
     return task_id;
   }
@@ -114,9 +192,11 @@ export class Workflow extends APIResource {
     const url = `${this._client.workflowURL}/task_result_query`
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this._client.apiKey}`,
     }
-    const data = { task_id }
+    const data = {
+      task_id,
+      api_key: this.defaultApiKey
+    }
 
     const response = await fetch(url, {
       method: 'POST',
@@ -135,9 +215,11 @@ export class Workflow extends APIResource {
     const url = `${this._client.workflowURL}/resource_request`
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this._client.apiKey}`,
     }
-    const data = { consumer_id }
+    const data = {
+      consumer_id,
+      api_key: this.defaultApiKey
+    }
 
     const response = await fetch(url, {
       method: 'POST',
@@ -157,17 +239,22 @@ export class Workflow extends APIResource {
     const url = `${this._client.workflowURL}/task_create`
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this._client.apiKey}`,
     }
     const { job_id_prefix = 'sdk-workflow' } = task;
     const id = Randomstring.generate({ charset: 'hex', length: 10 })
     const job_id = `${job_id_prefix}-${id}`
 
+    // Apply default values here instead of in the task constructor
+    task.consumer_id = task.consumer_id || this.defaultConsumerId;
+    task.api_key = task.api_key || this.defaultApiKey;
+
     const data: any = {
-      consumer_id: task.consumer_id,
+      consumer_id: task.consumer_id || this.defaultConsumerId,
       task_type: task.task_type,
       task_details: task.task_details,
-      job_id
+      job_id,
+      workflow_id: task.workflow_id,
+      api_key: task.api_key || this.defaultApiKey
     };
 
     if (task.timeout_seconds !== undefined) {
@@ -218,9 +305,11 @@ export class Workflow extends APIResource {
     const url = `${this._client.workflowURL}/task_cancel`
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this._client.apiKey}`,
     }
-    const data = { task_id }
+    const data = {
+      task_id,
+      api_key: this.defaultApiKey
+    }
 
     const response = await fetch(url, {
       method: 'POST',
