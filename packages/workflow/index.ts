@@ -1,6 +1,26 @@
 import { APIResource } from '../resource'
 import Randomstring from 'randomstring'
 
+// Response interfaces
+interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+interface MinerResponse {
+  miner_id: string;
+}
+
+interface TaskCreateResponse {
+  task_id: string;
+}
+
+interface TaskCancelResponse {
+  task_id: string;
+  msg: string;
+}
+
 function parseApiKeyString(combinedKey: string): { consumerId: string; apiKey: string } {
   const [consumerId, apiKey] = combinedKey.split('#');
   return {
@@ -182,97 +202,71 @@ export class Workflow extends APIResource {
     this.defaultApiKey = apiKey;
   }
 
-  async executeWorkflow(task: WorkflowTask): Promise<string> {
-    await this.resourceRequest(task.consumer_id || this.defaultConsumerId)
-    const task_id = await this.createTask(task)
-    return task_id;
-  }
-
-  async queryTaskResult(task_id: string): Promise<WorkflowTaskResult> {
-    const url = `${this._client.workflowURL}/task_result_query`
-    const headers = {
-      'Content-Type': 'application/json',
-    }
-    const data = {
-      task_id,
-      api_key: this.defaultApiKey
-    }
-
+  private async makeRequest<T>(endpoint: string, data: any): Promise<T> {
+    const url = `${this._client.workflowURL}/${endpoint}`
     const response = await fetch(url, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(data),
     })
 
     if (!response.ok) {
-      throw new Error(`Task result query failed: ${response.statusText}`)
+      try {
+        const contentType = response.headers.get('content-type')
+        if (contentType?.includes('application/json')) {
+          const errorData: ApiResponse<T> = await response.json()
+          throw new Error(errorData.error || errorData.message || 'Unknown error')
+        } else {
+          const errorText = await response.text()
+          throw new Error(errorText || 'Unknown error')
+        }
+      } catch (e) {
+        if (e instanceof Error) throw e
+        throw new Error(response.statusText)
+      }
     }
 
-    return await response.json()
+    return response.json()
+  }
+
+  async executeWorkflow(task: WorkflowTask): Promise<string> {
+    await this.resourceRequest(task.consumer_id || this.defaultConsumerId)
+    const task_id = await this.createTask(task)
+    return task_id
   }
 
   async resourceRequest(consumer_id: string): Promise<string> {
-    const url = `${this._client.workflowURL}/resource_request`
-    const headers = {
-      'Content-Type': 'application/json',
-    }
     const data = {
       consumer_id,
       api_key: this.defaultApiKey
     }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Resource request failed: ${response.statusText}`)
-    }
-
-    const result = await response.json()
+    const result = await this.makeRequest<MinerResponse>('resource_request', data)
     return result.miner_id
   }
 
   async createTask(task: WorkflowTask): Promise<string> {
-    const url = `${this._client.workflowURL}/task_create`
-    const headers = {
-      'Content-Type': 'application/json',
-    }
-    const { job_id_prefix = 'sdk-workflow' } = task;
     const id = Randomstring.generate({ charset: 'hex', length: 10 })
-    const job_id = `${job_id_prefix}-${id}`
-
-    // Apply default values here instead of in the task constructor
-    task.consumer_id = task.consumer_id || this.defaultConsumerId;
-    task.api_key = task.api_key || this.defaultApiKey;
-
-    const data: any = {
+    const data = {
       consumer_id: task.consumer_id || this.defaultConsumerId,
+      api_key: task.api_key || this.defaultApiKey,
       task_type: task.task_type,
       task_details: task.task_details,
-      job_id,
+      job_id: `${task.job_id_prefix || 'sdk-workflow'}-${id}`,
       workflow_id: task.workflow_id,
-      api_key: task.api_key || this.defaultApiKey
-    };
-
-    if (task.timeout_seconds !== undefined) {
-      data.timeout_seconds = task.timeout_seconds;
+      ...(task.timeout_seconds && { timeout_seconds: task.timeout_seconds })
     }
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Task creation failed: ${response.statusText}`)
-    }
-
-    const result = await response.json()
+    const result = await this.makeRequest<TaskCreateResponse>('task_create', data)
     return result.task_id
+  }
+
+  async queryTaskResult(task_id: string): Promise<WorkflowTaskResult> {
+    return this.makeRequest<WorkflowTaskResult>('task_result_query', {
+      task_id,
+      api_key: this.defaultApiKey
+    })
   }
 
   async executeWorkflowAndWaitForResult(
@@ -284,43 +278,27 @@ export class Workflow extends APIResource {
       throw new Error('Interval should be more than 1000 (1 second)')
     }
 
-    const task_id = await this.executeWorkflow(task);
-    const startTime = Date.now();
+    const task_id = await this.executeWorkflow(task)
+    const startTime = Date.now()
 
     while (true) {
-      const result = await this.queryTaskResult(task_id);
+      const result = await this.queryTaskResult(task_id)
       if (result.status === 'finished' || result.status === 'failed') {
-        return result;
+        return result
       }
 
       if (Date.now() - startTime > timeout) {
-        throw new Error('Timeout waiting for task result');
+        throw new Error('Timeout waiting for task result')
       }
 
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise(resolve => setTimeout(resolve, interval))
     }
   }
 
-  async cancelTask(task_id: string): Promise<{ task_id: string; msg: string }> {
-    const url = `${this._client.workflowURL}/task_cancel`
-    const headers = {
-      'Content-Type': 'application/json',
-    }
-    const data = {
+  async cancelTask(task_id: string): Promise<TaskCancelResponse> {
+    return this.makeRequest<TaskCancelResponse>('task_cancel', {
       task_id,
       api_key: this.defaultApiKey
-    }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data),
     })
-
-    if (!response.ok) {
-      throw new Error(`Task cancellation failed: ${response.statusText}`)
-    }
-
-    return await response.json()
   }
 }
