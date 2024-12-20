@@ -10,6 +10,7 @@ interface ApiResponse<T> {
 
 interface MinerResponse {
   miner_id: string;
+  msg?: string;
 }
 
 interface TaskCreateResponse {
@@ -232,15 +233,20 @@ export class Workflow extends APIResource {
   }
 
   async executeWorkflow(task: WorkflowTask): Promise<string> {
-    await this.resourceRequest(task.consumer_id || this.defaultConsumerId)
+    // Pass workflow_id to resourceRequest
+    await this.resourceRequest(
+      task.consumer_id || this.defaultConsumerId,
+      task.workflow_id
+    )
     const task_id = await this.createTask(task)
     return task_id
   }
 
-  async resourceRequest(consumer_id: string): Promise<string> {
+  async resourceRequest(consumer_id: string, workflow_id?: string): Promise<string> {
     const data = {
       consumer_id,
-      api_key: this.defaultApiKey
+      api_key: this.defaultApiKey,
+      workflow_id
     }
     const result = await this.makeRequest<MinerResponse>('resource_request', data)
     return result.miner_id
