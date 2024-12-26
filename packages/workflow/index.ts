@@ -52,11 +52,11 @@ abstract class WorkflowTask {
   public api_key?: string;
 
   constructor(options: WorkflowTaskOptions) {
-    this.consumer_id = options.consumer_id;
-    this.job_id_prefix = options.job_id_prefix;
-    this.timeout_seconds = options.timeout_seconds;
-    this.workflow_id = options.workflow_id;
-    this.api_key = options.api_key;
+    if (options.consumer_id !== undefined) this.consumer_id = options.consumer_id;
+    if (options.job_id_prefix !== undefined) this.job_id_prefix = options.job_id_prefix;
+    if (options.timeout_seconds !== undefined) this.timeout_seconds = options.timeout_seconds;
+    if (options.workflow_id !== undefined) this.workflow_id = options.workflow_id;
+    if (options.api_key !== undefined) this.api_key = options.api_key;
   }
 
   abstract get task_type(): WorkflowTaskType;
@@ -134,11 +134,11 @@ export class FluxLoraTask extends WorkflowTask {
 }
 
 interface Text2VideoTaskOptions extends WorkflowTaskOptions {
-  prompt: string;
+  prompt: string;        // Only required parameter
   width?: number;
   height?: number;
-  length?: number;
   steps?: number;
+  length?: number;
   seed?: number;
   fps?: number;
   quality?: number;
@@ -146,24 +146,26 @@ interface Text2VideoTaskOptions extends WorkflowTaskOptions {
 
 export class Text2VideoTask extends WorkflowTask {
   private prompt: string;
-  private width: number;
-  private height: number;
-  private length: number;
-  private steps: number;
-  private seed: number;
-  private fps: number;
-  private quality: number;
+  private width?: number;
+  private height?: number;
+  private length?: number;
+  private steps?: number;
+  private seed?: number;
+  private fps?: number;
+  private quality?: number;
 
   constructor(options: Text2VideoTaskOptions) {
     super(options);
     this.prompt = options.prompt;
-    this.width = options.width || 848;
-    this.height = options.height || 480;
-    this.length = options.length || 37;
-    this.steps = options.steps || 30;
-    this.seed = options.seed || Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-    this.fps = options.fps || 24;
-    this.quality = options.quality || 80;
+
+    // Only assign properties if they're provided
+    if (options.width !== undefined) this.width = options.width;
+    if (options.height !== undefined) this.height = options.height;
+    if (options.length !== undefined) this.length = options.length;
+    if (options.steps !== undefined) this.steps = options.steps;
+    if (options.seed !== undefined) this.seed = options.seed;
+    if (options.fps !== undefined) this.fps = options.fps;
+    if (options.quality !== undefined) this.quality = options.quality;
   }
 
   get task_type(): WorkflowTaskType {
@@ -171,18 +173,20 @@ export class Text2VideoTask extends WorkflowTask {
   }
 
   get task_details(): Record<string, any> {
-    return {
-      parameters: {
-        prompt: this.prompt,
-        width: this.width,
-        height: this.height,
-        length: this.length,
-        steps: this.steps,
-        seed: this.seed,
-        fps: this.fps,
-        quality: this.quality
-      }
+    const parameters: Record<string, any> = {
+      prompt: this.prompt
     };
+
+    // Only include parameters if they exist on the instance
+    if ('width' in this) parameters.width = this.width;
+    if ('height' in this) parameters.height = this.height;
+    if ('length' in this) parameters.length = this.length;
+    if ('steps' in this) parameters.steps = this.steps;
+    if ('seed' in this) parameters.seed = this.seed;
+    if ('fps' in this) parameters.fps = this.fps;
+    if ('quality' in this) parameters.quality = this.quality;
+
+    return { parameters };
   }
 }
 
