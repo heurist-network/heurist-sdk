@@ -218,19 +218,18 @@ export class Workflow extends APIResource {
     })
 
     if (!response.ok) {
-      try {
-        const contentType = response.headers.get('content-type')
-        if (contentType?.includes('application/json')) {
-          const errorData: ApiResponse<T> = await response.json()
-          throw new Error(errorData.error || errorData.message || 'Unknown error')
-        } else {
-          const errorText = await response.text()
-          throw new Error(errorText || 'Unknown error')
-        }
-      } catch (e) {
-        if (e instanceof Error) throw e
-        throw new Error(response.statusText)
+      const errorData = response.headers.get('content-type')?.includes('application/json')
+        ? await response.json()
+        : { message: await response.text() }
+
+      const error = new Error()
+      error.message = errorData.message || errorData.error || 'Unknown error'
+      error['errorDetails'] = {
+        status_code: response.status,
+        error_type: response.status >= 500 ? 'server_error' : 'client_error',
+        message: error.message
       }
+      throw error
     }
 
     return response.json()
@@ -240,17 +239,19 @@ export class Workflow extends APIResource {
     // Pass workflow_id to resourceRequest
     await this.resourceRequest(
       task.consumer_id || this.defaultConsumerId,
-      task.workflow_id
+      task.workflow_id,
+      task.task_type
     )
     const task_id = await this.createTask(task)
     return task_id
   }
 
-  async resourceRequest(consumer_id: string, workflow_id?: string): Promise<string> {
+  async resourceRequest(consumer_id: string, workflow_id?: string, task_type?: WorkflowTaskType): Promise<string> {
     const data = {
       consumer_id,
       api_key: this.defaultApiKey,
-      workflow_id
+      workflow_id,
+      task_type
     }
     const result = await this.makeRequest<MinerResponse>('resource_request', data)
     return result.miner_id
