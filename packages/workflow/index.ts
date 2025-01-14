@@ -23,7 +23,15 @@ interface TaskCancelResponse {
 }
 
 function parseApiKeyString(combinedKey: string): { consumerId: string; apiKey: string } {
-  const [consumerId, apiKey] = combinedKey.split('#');
+  let parts: string[];
+
+  if (combinedKey.includes('#')) {
+    parts = combinedKey.split('#');
+  } else {
+    parts = combinedKey.split('-');
+  }
+
+  const [consumerId, apiKey] = parts;
   return {
     consumerId: consumerId || '',
     apiKey: apiKey || ''
