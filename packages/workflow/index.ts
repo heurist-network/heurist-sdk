@@ -40,7 +40,7 @@ function parseApiKeyString(combinedKey: string): { consumerId: string; apiKey: s
 
 export enum WorkflowTaskType {
   Upscaler = 'upscaler',
-  FluxLora = 'flux-lora',
+  FluxLora = 'txt2img',
   Text2Video = 'txt2vid'
 }
 
@@ -94,32 +94,37 @@ export class UpscalerTask extends WorkflowTask {
 
 interface FluxLoraTaskOptions extends WorkflowTaskOptions {
   prompt: string;
+  lora_name: string;
   aspect_ratio?: string;
   width?: number;
   height?: number;
   guidance?: number;
   steps?: number;
-  lora_name: string;
 }
 
 export class FluxLoraTask extends WorkflowTask {
   private prompt: string;
-  private aspect_ratio: string;
-  private width: number;
-  private height: number;
-  private guidance: number;
-  private steps: number;
   private lora_name: string;
+  private aspect_ratio?: string;
+  private width?: number;
+  private height?: number;
+  private guidance?: number;
+  private steps?: number;
 
   constructor(options: FluxLoraTaskOptions) {
     super(options);
+    if (!options.lora_name) {
+      throw new Error('lora_name is required for FluxLoraTask');
+    }
     this.prompt = options.prompt;
-    this.aspect_ratio = options.aspect_ratio || 'custom';
-    this.width = options.width || 1024;
-    this.height = options.height || 1024;
-    this.guidance = options.guidance || 6;
-    this.steps = options.steps || 20;
     this.lora_name = options.lora_name;
+
+    // Only assign if provided
+    if (options.aspect_ratio !== undefined) this.aspect_ratio = options.aspect_ratio;
+    if (options.width !== undefined) this.width = options.width;
+    if (options.height !== undefined) this.height = options.height;
+    if (options.guidance !== undefined) this.guidance = options.guidance;
+    if (options.steps !== undefined) this.steps = options.steps;
   }
 
   get task_type(): WorkflowTaskType {
@@ -127,17 +132,19 @@ export class FluxLoraTask extends WorkflowTask {
   }
 
   get task_details(): Record<string, any> {
-    return {
-      parameters: {
-        prompt: this.prompt,
-        aspect_ratio: this.aspect_ratio,
-        width: this.width,
-        height: this.height,
-        guidance: this.guidance,
-        steps: this.steps,
-        lora_name: this.lora_name
-      }
+    const parameters: Record<string, any> = {
+      prompt: this.prompt,
+      lora_name: this.lora_name  // Always included since it's required
     };
+
+    // Only include optional parameters if they exist
+    if (this.aspect_ratio !== undefined) parameters.aspect_ratio = this.aspect_ratio;
+    if (this.width !== undefined) parameters.width = this.width;
+    if (this.height !== undefined) parameters.height = this.height;
+    if (this.guidance !== undefined) parameters.guidance = this.guidance;
+    if (this.steps !== undefined) parameters.steps = this.steps;
+
+    return { parameters };
   }
 }
 
