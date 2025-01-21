@@ -251,12 +251,6 @@ export class Workflow extends APIResource {
   }
 
   async executeWorkflow(task: WorkflowTask): Promise<string> {
-    // Pass workflow_id to resourceRequest
-    await this.resourceRequest(
-      task.consumer_id || this.defaultConsumerId,
-      task.workflow_id,
-      task.task_type
-    )
     const task_id = await this.createTask(task)
     return task_id
   }
