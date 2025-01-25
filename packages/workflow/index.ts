@@ -230,6 +230,7 @@ export class Workflow extends APIResource {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
+      signal: AbortSignal.timeout(60000),
     })
 
     if (!response.ok) {
