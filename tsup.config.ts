@@ -11,7 +11,6 @@ export default defineConfig((options) => ({
   minify: true,
   external: [
     'openai',
-    'punycode',
     'url',
     'querystring',
     'http',
